@@ -1,9 +1,18 @@
 defmodule Espy do
   @moduledoc """
-  Espy keeps the contexts that define your domain
-  and business logic.
-
-  Contexts are also responsible for managing your data, regardless
-  if it comes from the database, an external API or others.
+  Documentation for `Espy`.
   """
+
+  @doc """
+  Hello world.
+
+  ## Examples
+
+      iex> Espy.hello()
+      :world
+
+  """
+  def hello do
+    :world
+  end
 end

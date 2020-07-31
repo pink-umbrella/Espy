@@ -1,35 +1,48 @@
 defmodule Espy.Kademlia.Bucket do
   alias Espy.Kademlia.Contact
+  alias Espy.Node
 
-  defstruct max_size: 20, contacts: [], replacements: []
-  
-  defmacro contains?(%{contacts: contacts}, contact) do
-    quote do: unquote(contact) in unquote(contacts)
+  defstruct max_size: 20,
+            index: 0,
+            contacts: [],
+            replacements: [],
+            lower_range: 0,
+            upper_range: Math.pow(2, 192),
+            depth: 0
+
+  def add_contact(bucket, contact) do
+    update(bucket, contact)
+  end
+
+  def find_contact(contacts, contact) do
+    Enum.find(contacts, fn %{id: id} -> id == contact.id end)
+  end
+
+  def move_contact_to_end(bucket, contact) do
+    %{bucket | contacts: remove(bucket, contact) ++ [contact]}
   end
 
   def update(bucket = %{contacts: []}, contact) do
     %{bucket | contacts: [contact]}
   end
 
-  def update(bucket, contact = %Contact{id: node_id})
-    when contains?(bucket, contact) do
-    updated = remove(bucket, contact) <> [contact]
-    %{bucket | contacts: updated}
+  def update(bucket = %{contacts: contacts, max_size: max_size}, contact) do
+    with c <- find_contact(contacts, contact), size <- length(contacts) do
+      case c do
+        nil when size < max_size -> %{bucket | contacts: contacts ++ [contact]}
+        nil when size == max_size -> spawn ping_and_update(bucket, contact)
+        _ -> move_contact_to_end(bucket, contact)
+      end
+    end
+
   end
 
-  def update(bucket, contact = %Contact{node_id, ip_address, port})
-    when not contains?(bucket, contact) and Map.count(bucket.nodes) == bucket.max_size do
-
-    # Ping Top Contact
-      # Wait for Response
-      # If no timeout, put new contact in replcements
-      # If response, move to end
-  end
-
-  def update(bucket, node = %Contact{node_id, ip_address, port})
-    when not contains?(bucket, contact) and Map.count(bucket.nodes) < bucket.max_size do
-
-    %{bucket | nodes: [bucket[:nodes] | node]}
+  defp ping_and_update(bucket, contact) do
+    oldest = hd(bucket[:contacts])
+    case GenServer.call(Node, {:ping, oldest}) do
+      :pong -> move_contact_to_end(bucket, oldest)
+      _ -> %{bucket | contacts: remove(bucket, oldest) ++ contact}
+    end
   end
 
   def remove(bucket, contact) do

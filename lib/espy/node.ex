@@ -1,15 +1,11 @@
-defmodule Espy.Kademlia.Node do
+defmodule Espy.Node do
   use GenServer
+  alias Espy.Kademlia.RoutingTable
 
-  defstruct [:endpoint, :contact, :buckets]
+  defstruct [:localhost]
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
-  end
-
-  def add_contact(node, contact) do
-    #find bucket
-      #add to bucket
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def create_connection(node, contact) do
@@ -21,10 +17,15 @@ defmodule Espy.Kademlia.Node do
   def send_data(node, contact, data) do
   end
 
-  def init(args) do
-    {:ok, }
+  @impl true
+  def init(localhost: localhost) do
+    {:ok, %{localhost: localhost}}
   end
 
+  def handle_call(:ping, contact) do
+
+  end
+  
   def handle_call(:add_contact) do
   end
 
@@ -36,5 +37,4 @@ defmodule Espy.Kademlia.Node do
 
   def handle_call(:send_data) do
   end
-
 end
