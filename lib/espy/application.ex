@@ -13,7 +13,8 @@ defmodule Espy.Application do
     bootstrap = %Contact{id: ID.new(), ip: "127.0.0.1", port: 31416}
     children = [
       {Espy.Node, [localhost: localhost]},
-      {Espy.Kademlia.RoutingTable, [localhost, bootstrap, 10]}
+      {Espy.Kademlia.RoutingTable, [localhost, bootstrap, 10]},
+      {Espy.ConnectionSup, []}
       # Starts a worker by calling: KVServer.Worker.start_link(arg)
       # {KVServer.Worker, arg},
     ]

@@ -19,13 +19,14 @@ defmodule Espy.Node do
 
   @impl true
   def init(localhost: localhost) do
-    {:ok, %{localhost: localhost}}
+    #{:ok, server} = Socket.listen("tcp://*:31415")
+    {:ok, %{localhost: localhost}}#, server: server}}
   end
 
-  def handle_call(:ping, contact) do
+  def handle_call({:ping, contact}, _from, state) do
 
   end
-  
+
   def handle_call(:add_contact) do
   end
 

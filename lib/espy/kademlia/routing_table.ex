@@ -31,6 +31,10 @@ defmodule Espy.Kademlia.RoutingTable do
     GenServer.call(__MODULE__, :get_contacts)
   end
 
+  def get_closest_contacts(contact, count) do
+    GenServer.call(__MODULE__, {:get_closest, contact, count})
+  end
+
   defp select_or_add_bucket!(state = %{localhost: localhost, buckets: buckets, k_size: k_size}, contact) do
     with distance <- Contact.distance(localhost, contact),
          index <- trunc(Float.floor(Math.log2(distance))) do
@@ -55,7 +59,7 @@ defmodule Espy.Kademlia.RoutingTable do
   def init([localhost: localhost, bootstrap: _bs_contact, k_size: k_size]) do
     # TODO: Load known routing table from disk storage upon hard reset
     # TODO: Do Network Search for self to bootstrap
-    {:ok, %{localhost: localhost, buckets: %{}, k_size: k_size}}
+    {:ok, %{localhost: localhost, buckets: %OrdMap{}, k_size: k_size}}
   end
 
   @impl true
@@ -70,7 +74,24 @@ defmodule Espy.Kademlia.RoutingTable do
   end
 
   @impl true
-  def handle_call(:get_contacts, _from, state) do
+  def handle_call(:get_contacts, from, state) do
+    IO.inspect(from)
     {:reply, get_all_contacts(state), state}
+  end
+
+  @impl true
+  def handle_call({:get_closest, contact, count}, _from, state) do
+    #Start at bucket => distnce(localhost, key)
+    #Get closest from bucket
+    #If result nodes > count, drop farthest to make length = count, return nodes
+    #If result nodes == count, return nodes
+    #If results nodes < count, recurse at distance - 1, reutrn result
+    {:reply, 0, state}
+  end
+
+  defp closest_start(contact, count, state = %{localhost: localhost, buckets: buckets}) do
+    with distance <- Contact.distance(contact, localhost) do
+
+    end
   end
 end

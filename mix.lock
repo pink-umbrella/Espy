@@ -4,8 +4,11 @@
   "curve25519": {:hex, :curve25519, "1.0.3", "101248eeb2ed28f1b8d2d423cf560bfc99f5e22bae5a2bb113fd24efad05fae1", [:mix], [], "hexpm", "aa936079df2bcefb5cffa68840dc048f222fb7a5cb5827c735dacddba30e3b23"},
   "ets": {:hex, :ets, "0.8.1", "8ff9bcda5682b98493f8878fc9dbd990e48d566cba8cce59f7c2a78130da29ea", [:mix], [], "hexpm", "6be41b50adb5bc5c43626f25ea2d0af1f4a242fb3fad8d53f0c67c20b78915cc"},
   "ex_crypto": {:hex, :ex_crypto, "0.10.0", "af600a89b784b36613a989da6e998c1b200ff1214c3cfbaf8deca4aa2f0a1739", [:mix], [{:poison, ">= 2.0.0", [hex: :poison, repo: "hexpm", optional: false]}], "hexpm", "ccc7472cfe8a0f4565f97dce7e9280119bf15a5ea51c6535e5b65f00660cde1c"},
+  "jason": {:hex, :jason, "1.2.1", "12b22825e22f468c02eb3e4b9985f3d0cb8dc40b9bd704730efa11abd2708c44", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b659b8571deedf60f79c5a608e15414085fa141344e2716fbd6988a084b5f993"},
+  "libcluster": {:hex, :libcluster, "3.2.1", "b2cd5b447cde25d5897749bee6f7aaeb6c96ac379481024e9b6ba495dabeb97d", [:mix], [{:jason, "~> 1.1", [hex: :jason, repo: "hexpm", optional: false]}], "hexpm", "89f225612d135edce9def56f43bf18d575d88ac4680e3f6161283f2e55cadca4"},
   "math": {:hex, :math, "0.5.0", "c51dfad202f189bd7ea81b72e246712655d51efd4f3445dfc92b88672709c12d", [:mix], [], "hexpm", "926b676e36b5f56725deaaee798ee4c3d3432716abd9b33af1debff5f9e82a79"},
   "ord_map": {:hex, :ord_map, "0.1.0", "6c958f53e38934a2f60d4b0050e3bdfcc498071769f93887372ae4db5cb21d3c", [:mix], [], "hexpm", "c3c87eea4f196bf0ab316eb2f089a922fb783c59a2a579bcdea616c06a7faebb"},
   "poison": {:hex, :poison, "4.0.1", "bcb755a16fac91cad79bfe9fc3585bb07b9331e50cfe3420a24bcc2d735709ae", [:mix], [], "hexpm", "ba8836feea4b394bb718a161fc59a288fe0109b5006d6bdf97b6badfcf6f0f25"},
+  "poolboy": {:hex, :poolboy, "1.5.2", "392b007a1693a64540cead79830443abf5762f5d30cf50bc95cb2c1aaafa006b", [:rebar3], [], "hexpm", "dad79704ce5440f3d5a3681c8590b9dc25d1a561e8f5a9c995281012860901e3"},
   "socket": {:hex, :socket, "0.3.13", "98a2ab20ce17f95fb512c5cadddba32b57273e0d2dba2d2e5f976c5969d0c632", [:mix], [], "hexpm", "f82ea9833ef49dde272e6568ab8aac657a636acb4cf44a7de8a935acb8957c2e"},
 }
