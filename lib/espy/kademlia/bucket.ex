@@ -30,7 +30,7 @@ defmodule Espy.Kademlia.Bucket do
   end
 
   def move_contact_to_end(bucket, contact) do
-    %{bucket | contacts: remove(bucket, contact) ++ [contact]}
+    bucket |> Map.put(:contacts, remove(bucket, contact) ++ [contact])
   end
 
   def update(bucket = %{contacts: []}, contact) do
@@ -45,26 +45,25 @@ defmodule Espy.Kademlia.Bucket do
         _ -> move_contact_to_end(bucket, contact)
       end
     end
-
   end
 
   defp async_ping(bucket, contact) do
-    oldest = hd(bucket[:contacts])
+    oldest = hd(bucket.contacts)
     Task.async(fn ->
       :poolboy.transaction(:connection_worker,
-        fn pid -> GenServer.call(pid, {:ping, oldest, bucket[:index]}) end,
+        fn pid -> GenServer.call(pid, {:ping, oldest, bucket.index}) end,
         @ping_timeout
       )
     end)
-    Map.put(bucket, :replacements, bucket[:replacements] ++ [contact])
+    Map.put(bucket, :replacements, bucket.replacements ++ [contact])
   end
 
   def remove(bucket, contact) do
     bucket = Map.put(bucket, :contacts, List.delete(bucket.contacts, contact))
-    if bucket[:replacements] != [] do
-      [replacement | rest] = bucket[:replacements]
+    if bucket.replacements != [] do
+      [replacement | rest] = bucket.replacements
       Map.put(bucket, :replacements, rest)
-      |> Map.put(:contacts, bucket[:contacts] ++ [replacement])
+      |> Map.put(:contacts, bucket.contacts ++ [replacement])
     end
   end
 end

@@ -59,7 +59,7 @@ defmodule Espy.Kademlia.RoutingTable do
   def init([localhost: localhost, bootstrap: _bs_contact, k_size: k_size]) do
     # TODO: Load known routing table from disk storage upon hard reset
     # TODO: Do Network Search for self to bootstrap
-    {:ok, %{localhost: localhost, buckets: %OrdMap{}, k_size: k_size}}
+    {:ok, %{localhost: localhost, buckets: %{}, k_size: k_size}}
   end
 
   @impl true
@@ -74,8 +74,7 @@ defmodule Espy.Kademlia.RoutingTable do
   end
 
   @impl true
-  def handle_call(:get_contacts, from, state) do
-    IO.inspect(from)
+  def handle_call(:get_contacts, _from, state) do
     {:reply, get_all_contacts(state), state}
   end
 
@@ -86,12 +85,18 @@ defmodule Espy.Kademlia.RoutingTable do
     #If result nodes > count, drop farthest to make length = count, return nodes
     #If result nodes == count, return nodes
     #If results nodes < count, recurse at distance - 1, reutrn result
-    {:reply, 0, state}
+    contacts = closest_start(contact, count, state)
+    {:reply, contacts, state}
   end
 
-  defp closest_start(contact, count, state = %{localhost: localhost, buckets: buckets}) do
+  defp closest_start(contact, count, %{localhost: localhost, buckets: buckets}) do
     with distance <- Contact.distance(contact, localhost) do
-
+      buckets
+      |> Enum.take_while(fn {index, _bucket} -> index <= distance end)
+      |> Enum.reduce_while([], fn {_index, bucket}, acc ->
+        if length(acc) < count, do: {:cont, acc ++ bucket.contacts}, else: {:halt, acc}
+      end)
+      |> Enum.take(count)
     end
   end
 end
