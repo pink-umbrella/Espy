@@ -9,12 +9,13 @@ defmodule Espy.Application do
 
   def start(_type, _args) do
     # List all child processes to be supervised
-    localhost = %Contact{id: ID.new(), ip: "127.0.0.1", port: 31415}
+    localhost = %Contact{id: ID.new(), ip: "127.0.0.1", port: 31415 + :rand.uniform(50)}
     bootstrap = %Contact{id: ID.new(), ip: "127.0.0.1", port: 31416}
+
     children = [
       {Espy.Node, [localhost: localhost]},
       {Espy.Kademlia.RoutingTable, [localhost, bootstrap, 10]},
-      {Espy.ConnectionSup, []}
+      {Espy.ConnectionSup, [localhost: localhost]}
       # Starts a worker by calling: KVServer.Worker.start_link(arg)
       # {KVServer.Worker, arg},
     ]

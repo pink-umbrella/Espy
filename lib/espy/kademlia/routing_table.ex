@@ -1,7 +1,8 @@
 defmodule Espy.Kademlia.RoutingTable do
+  require Logger
+
   use GenServer
-  alias Espy.Kademlia.Bucket
-  alias Espy.Kademlia.Contact
+  alias Espy.Kademlia.{Bucket, Contact}
 
   defstruct [:localhost,
              :buckets,
@@ -11,6 +12,16 @@ defmodule Espy.Kademlia.RoutingTable do
              :replicate_time,
              :republish_time
             ]
+
+  @type t :: %__MODULE__{
+    localhost: Contact.t,
+    buckets: list(Bucket.t),
+    k_size: integer,
+    expire_time: integer,
+    refresh_time: integer,
+    replicate_time: integer,
+    republish_time: integer
+  }
 
   def child_spec(arg) do
     %{
@@ -23,14 +34,17 @@ defmodule Espy.Kademlia.RoutingTable do
     GenServer.start_link(__MODULE__, [localhost: localhost, bootstrap: bootstrap, k_size: k], name: __MODULE__)
   end
 
+  @spec add_contact(Contact.t) :: {atom, integer}
   def add_contact(contact) do
     GenServer.call(__MODULE__, {:add_contact, contact})
   end
 
+  @spec get_contacts() :: {atom, list(Contact.t)}
   def get_contacts() do
     GenServer.call(__MODULE__, :get_contacts)
   end
 
+  @spec get_closest_contacts(Contact.t, integer) :: {atom, list(Contact.t)}
   def get_closest_contacts(contact, count) do
     GenServer.call(__MODULE__, {:get_closest, contact, count})
   end
@@ -59,6 +73,7 @@ defmodule Espy.Kademlia.RoutingTable do
   def init([localhost: localhost, bootstrap: _bs_contact, k_size: k_size]) do
     # TODO: Load known routing table from disk storage upon hard reset
     # TODO: Do Network Search for self to bootstrap
+    Logger.info("Routing table started for #{localhost.ip}:#{localhost.port} with id: #{localhost.id.key}")
     {:ok, %{localhost: localhost, buckets: %{}, k_size: k_size}}
   end
 

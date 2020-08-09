@@ -1,4 +1,5 @@
 defmodule Espy.ConnectionWorker do
+  require Logger
   use GenServer
 
   def start_link(opts) do
@@ -7,13 +8,22 @@ defmodule Espy.ConnectionWorker do
 
   @impl true
   def init(_) do
+    Logger.info("Connection worker created")
     {:ok, %{socket: nil, contact: nil}}
+  end
+
+  @impl true
+  def handle_cast({:set_connection, socket, contact}, state) do
+    state |> Map.put(:socket, socket) |> Map.put(:contact, contact)
+    Logger.info("Connection set with contact: #{contact.ip}:#{contact.port}")
+    {:noreply, state}
   end
 
   @impl true
   def handle_call({:connect, contact, options}, _from, state = %{socket: nil}) do
     {:ok, socket} = Socket.TCP.connect(contact.ip, contact.port, options)
     state |> Map.put(:socket, socket) |> Map.put(:contact, contact)
+    Logger.info("Connection opened with contact: #{contact.ip}:#{contact.port}")
     {:reply, :success, state}
   end
 
@@ -28,9 +38,10 @@ defmodule Espy.ConnectionWorker do
   end
 
   @impl true
-  def handle_call(:disconnect, _from, state = %{socket: socket}) do
+  def handle_call(:disconnect, _from, state = %{socket: socket, contact: contact}) do
     Socket.Stream.close(socket)
     state = Map.put(state, :socket, nil)
+    Logger.info("Connection disconnected with contact: #{contact.ip}:#{contact.port}")
     {:reply, :success, state}
   end
 

@@ -1,4 +1,6 @@
 defmodule Espy.ConnectionSup do
+  require Logger
+  
   defp poolboy_config do
   [
     name: {:local, :connection_worker},
@@ -18,11 +20,22 @@ defmodule Espy.ConnectionSup do
   }
   end
 
-  def start_link(_args) do
+  def start_link(args) do
     children = [
-      :poolboy.child_spec(:connection_worker, poolboy_config())
+      :poolboy.child_spec(:connection_worker, poolboy_config()),
+      {Espy.ConnectionListener, localhost: args[:localhost]}
     ]
 
     Supervisor.start_link(children, [strategy: :one_for_one])
+  end
+
+  def checkout() do
+    Logger.info("Checking out connection worker")
+    :poolboy.checkout(:connection_worker)
+  end
+
+  def checkin(worker) do
+    Logger.info("Checking in worker")
+    :poolboy.checkin(:connection_worker, worker)
   end
 end

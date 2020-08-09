@@ -1,11 +1,18 @@
 defmodule Espy.Node do
+  require Logger
   use GenServer
-  alias Espy.Kademlia.RoutingTable
+  alias Espy.Kademlia.{RoutingTable, Contact}
+  alias Espy.ConnectionSup
 
-  defstruct [:localhost]
+  defstruct [:localhost, :connections]
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
+  end
+
+  @spec add_connection(Socket.t, Contact.t) :: atom
+  def add_connection(socket, contact) do
+    GenServer.cast(__MODULE__, {:add_connection, socket, contact})
   end
 
   def create_connection(node, contact) do
@@ -19,10 +26,19 @@ defmodule Espy.Node do
 
   @impl true
   def init(localhost: localhost) do
-    #{:ok, server} = Socket.listen("tcp://*:31415")
-    {:ok, %{localhost: localhost}}#, server: server}}
+    Logger.info("Node started with localhost: #{localhost.ip}:#{localhost.port}")
+    {:ok, %{localhost: localhost, connections: []}}
   end
 
+  @impl true
+  def handle_cast({:add_connection, socket, contact}, state = %{connections: connections}) do
+    worker = ConnectionSup.checkout()
+    GenServer.cast(worker, {:set_connection, socket, contact})
+    state = state |> Map.put(:connections, connections ++ [worker])
+    {:noreply, state}
+  end
+
+  @impl true
   def handle_call({:ping, contact}, _from, state) do
 
   end
