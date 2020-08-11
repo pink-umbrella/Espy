@@ -1,4 +1,9 @@
 defmodule Espy.ConnectionListener do
+  @moduledoc """
+  The module containing the logic for a socket listening for incoming connections.
+  Once a connection has been accepted, it is passed off to the connection worker
+  pool, while continuing to listen for connections.
+  """
   require Logger
   use Task
 

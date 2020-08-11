@@ -39,19 +39,22 @@ defmodule Espy.Node do
   end
 
   @impl true
-  def handle_call({:ping, contact}, _from, state) do
-
+  def handle_call(:create_connection, _from, state) do
+    {:reply, nil, state}
   end
 
-  def handle_call(:add_contact) do
+  @impl true
+  def handle_call(:close_connection, _from, state) do
+    {:reply, nil, state}
   end
 
-  def handle_call(:create_connection) do
+  @impl true
+  def handle_call({:ping, _contact}, _from, state) do
+    {:reply, nil, state}
   end
 
-  def handle_call(:close_connection) do
-  end
-
-  def handle_call(:send_data) do
+  @impl true
+  def handle_call(:send_data, _from, state) do
+    {:reply, nil, state}
   end
 end

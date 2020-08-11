@@ -1,4 +1,7 @@
 defmodule Espy.ID do
+  @moduledoc """
+  This module consists of a 192 bit key as an integer, and the time the id was issued.
+  """
   import Bitwise
 
   defstruct [:key, :time_created]
@@ -8,6 +11,17 @@ defmodule Espy.ID do
     time_created: DateTime.t
   }
 
+  @doc """
+  Issues a new randomly generated ID recording the time of issuance.
+
+  Returns `%ID{}`.
+
+  ## Examples
+
+      iex> Espy.ID.new()
+      %Espy.ID{key: ...3534, time_created: ~U[2020-08-10 02:32:22.097046Z]}
+
+  """
   def new() do
     with <<key::big-integer-size(192)>> <- CryptoRand.uniform_bytes(Math.pow(2, 8), 24),
 
@@ -20,7 +34,13 @@ defmodule Espy.ID do
     end
   end
 
-  @spec distance(__MODULE__.t, __MODULE__.t) :: integer
+  @doc """
+  Returns the XOR distance between two IDs, as specified in the Kademlia whitepaper,
+  located [here](http://www.scs.stanford.edu/~dm/home/papers/kpos.pdf).
+
+  Returns `integer \#192 bits`
+  """
+  @spec distance(ID.t, ID.t) :: integer
   def distance(%{key: k1}, %{key: k2}) do
     k1 ^^^ k2
   end

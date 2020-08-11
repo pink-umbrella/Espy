@@ -1,4 +1,7 @@
 defmodule Espy.Kademlia.RoutingTable do
+  @moduledoc """
+  A Module containing the routing logic for a Kademlia based KV store
+  """
   require Logger
 
   use GenServer
@@ -12,10 +15,19 @@ defmodule Espy.Kademlia.RoutingTable do
              :replicate_time,
              :republish_time
             ]
-
+  @typedoc """
+  A Kademlia Routing Table
+    localhost: A Kademlia Contact
+    buckets: The map of k to the k-buckets that contain contacts at k distance from localhost
+    k_size: The k-bucket size to use
+    expire_time: The time at which a contact is removed if it's not able to be reached
+    refresh_time: The time at which the routing table tries to refresh the contents of contacts
+    replicate_time: The time at which to update contacts with localhost's whole database
+    republish_time: The time at which a KV Pair should be republished by it's original publisher
+  """
   @type t :: %__MODULE__{
     localhost: Contact.t,
-    buckets: list(Bucket.t),
+    buckets: %{required(integer) => Bucket.t},
     k_size: integer,
     expire_time: integer,
     refresh_time: integer,
@@ -34,16 +46,51 @@ defmodule Espy.Kademlia.RoutingTable do
     GenServer.start_link(__MODULE__, [localhost: localhost, bootstrap: bootstrap, k_size: k], name: __MODULE__)
   end
 
+  @doc """
+  Adds a contact to the routing table
+
+  Returns `index` at which k-bucket the contact was added
+
+  ## Examples
+
+      iex> RoutingTable.add_contact(%Contact{id: id1})
+      189
+
+  """
   @spec add_contact(Contact.t) :: {atom, integer}
   def add_contact(contact) do
     GenServer.call(__MODULE__, {:add_contact, contact})
   end
 
+  @doc """
+  Gets all contacts stored in the routing table in a list
+
+  Returns `[%Contact{}, ...]`
+
+  ## Examples
+
+      iex> RoutingTable.get_contacts()
+      [%Contact{}, %Contact{}, %Contact{}]
+
+  """
   @spec get_contacts() :: {atom, list(Contact.t)}
   def get_contacts() do
     GenServer.call(__MODULE__, :get_contacts)
   end
 
+  @doc """
+  Gets a requested number of contacts closest to a given contact, if there are fewer
+  contacts than requested currently in the routing table, it returns the amount the
+  table has.
+
+  Returns `[%Contact{}, ..., %Contact{}]` at which k-bucket the contact was added
+
+  ## Examples
+
+      iex> RoutingTable.get_closest_contacts(%Contact{}, 8)
+      [%Contact{}, %Contact{}, %Contact{}]
+
+  """
   @spec get_closest_contacts(Contact.t, integer) :: {atom, list(Contact.t)}
   def get_closest_contacts(contact, count) do
     GenServer.call(__MODULE__, {:get_closest, contact, count})
@@ -81,7 +128,8 @@ defmodule Espy.Kademlia.RoutingTable do
   def handle_call({:add_contact, contact}, _from, state) do
     {state, index} = select_or_add_bucket!(state, contact)
     bucket = state[:buckets][index]
-    bucket = Bucket.add_contact(bucket, contact)
+    |> Bucket.add_contact(contact)
+
     buckets = Map.put(state[:buckets], index, bucket)
     state = Map.put(state, :buckets, buckets)
 
