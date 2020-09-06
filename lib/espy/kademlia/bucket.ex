@@ -6,7 +6,7 @@ defmodule Espy.Kademlia.Bucket do
   the replacement cache.
   """
   alias Espy.Kademlia.Contact
-  #alias Espy.Node
+  alias Espy.Node
   @ping_timeout 1000
 
   defstruct max_size: 20,
@@ -17,11 +17,19 @@ defmodule Espy.Kademlia.Bucket do
             upper_range: Math.pow(2, 192),
             depth: 0
 
+  @typedoc """
+  The type representing a Kademlia k-bucket
+  max_size: The `k` of the k-bucket
+  index: The distance of this bucket from the routing table's localhost
+  contacts: The list of Contacts held in this bucket
+  replacements: The list of replacement Contacts in this bucket
+  waiting: The list of contacts waiting for a reply before processing
+  """
   @type t :: %__MODULE__{
     max_size: integer,
     index: integer,
     contacts: [Contact.t],
-    replacements: [Contact.t]
+    replacements: [Contact.t],
   }
 
   @doc """
@@ -122,7 +130,7 @@ defmodule Espy.Kademlia.Bucket do
     with c <- find_contact_by_id(contacts, contact.id), size <- length(contacts) do
       case c do
         nil when size < max_size -> %{bucket | contacts: contacts ++ [contact]}
-        nil when size == max_size -> async_ping(bucket, contact)
+        nil when size == max_size -> ping_choose(bucket, contact)
         _ -> move_contact_to_end(bucket, contact)
       end
     end
@@ -154,14 +162,13 @@ defmodule Espy.Kademlia.Bucket do
     end
   end
 
-  defp async_ping(bucket, contact) do
-    oldest = hd(bucket.contacts)
-    Task.async(fn ->
-      :poolboy.transaction(:connection_worker,
-        fn pid -> GenServer.call(pid, {:ping, oldest, bucket.index}) end,
-        @ping_timeout
-      )
-    end)
-    Map.put(bucket, :replacements, bucket.replacements ++ [contact])
+  defp ping_choose(bucket, _new_contact) do
+    with oldest <- hd(bucket.contacts),
+         task <- Node.ping(oldest) do
+      # case Task.yield(task) || Task.shutdown(task) do
+      #   {:ok, reply} -> IO.inspect(reply)
+      #   _ -> Map.put(bucket, :contacts, tl(bucket.contacts) ++ [new_contact])
+      # end
+    end
   end
 end

@@ -4,6 +4,7 @@ defmodule Espy.ID do
   """
   import Bitwise
 
+  @derive Jason.Encoder
   defstruct [:key, :time_created]
 
   @type t :: %__MODULE__{

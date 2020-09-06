@@ -5,6 +5,7 @@ defmodule Espy.Kademlia.Contact do
   """
   alias Espy.ID
 
+  @derive Jason.Encoder
   defstruct [:id, :ip, :port]
 
   @typedoc """
@@ -29,5 +30,9 @@ defmodule Espy.Kademlia.Contact do
   @spec distance(Contact.t, Contact.t) :: integer
   def distance(%{id: id1}, %{id: id2}) do
     ID.distance(id1, id2)
+  end
+
+  defimpl String.Chars do
+    def to_string(contact), do: "#{contact.ip}:#{contact.port} - id: #{contact.id}"
   end
 end
